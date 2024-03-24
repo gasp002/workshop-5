@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express, { Request, Response } from "express";
 import { BASE_NODE_PORT } from "../config";
 import { Value, NodeState } from "../types";
-import { sendMessageToAll, consensusStep1, consensusStep2 } from "../functions";
+import { sendglobalMessage, consensus1, consensus2 } from "../functions";
 import { delay } from "../utils";
 
 export async function node(
@@ -75,8 +75,8 @@ export async function node(
         }
         messagesStep1.get(k)!.push(x);
         if (messagesStep1.get(k)!.length >= N - F) {
-          state.x = consensusStep1(messagesStep1.get(k)!, state, N);
-          sendMessageToAll(2, state, N);
+          state.x = consensus1(messagesStep1.get(k)!, state, N);
+          sendglobalMessage(2, state, N);
         }
       }
 
@@ -86,9 +86,9 @@ export async function node(
         }
         messagesStep2.get(k)!.push(x);
         if (messagesStep2.get(k)!.length >= N - F) {
-          consensusStep2(messagesStep2.get(k)!, state, F);
+          consensus2(messagesStep2.get(k)!, state, F);
           state.k = state.k! + 1;
-          sendMessageToAll(1, state, N);
+          sendglobalMessage(1, state, N);
         }
       }
     }
@@ -103,7 +103,7 @@ export async function node(
     }
     if (!isFaulty) {
       state.k = 1;
-      sendMessageToAll(1, state, N);
+      sendglobalMessage(1, state, N);
     }
     return res.status(200).send("success");
   });
